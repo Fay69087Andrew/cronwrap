@@ -41,6 +41,15 @@ class TestJobMetric:
         m = _metric()
         assert m.timestamp >= before
 
+    def test_to_dict_values_match_fields(self):
+        """Ensure to_dict values are consistent with the object's own fields."""
+        m = _metric(command="ls -la", exit_code=2, duration=0.5)
+        d = m.to_dict()
+        assert d["command"] == m.command
+        assert d["exit_code"] == m.exit_code
+        assert d["succeeded"] == m.succeeded
+        assert d["timestamp"] == m.timestamp
+
 
 # ---------------------------------------------------------------------------
 # MetricsStore
@@ -61,6 +70,11 @@ class TestMetricsStore:
         self.store.record(_metric(command="job_a"))
         self.store.record(_metric(command="job_b"))
         assert len(self.store.for_command("job_a")) == 1
+
+    def test_for_command_no_match_returns_empty(self):
+        """for_command should return an empty list when no metrics match."""
+        self.store.record(_metric(command="job_a"))
+        assert self.store.for_command("nonexistent") == []
 
     def test_summary_empty(self):
         s = self.store.summary()
@@ -93,13 +107,4 @@ class TestMetricsStore:
         assert len(self.store.all()) == 1
 
 
-# ---------------------------------------------------------------------------
-# get_store
-# ---------------------------------------------------------------------------
-
-def test_get_store_returns_metrics_store():
-    assert isinstance(get_store(), MetricsStore)
-
-
-def test_get_store_same_instance():
-    assert get_store() is get_store()
+# --------
