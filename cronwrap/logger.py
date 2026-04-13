@@ -31,7 +31,15 @@ class LogConfig:
 
 
 def build_logger(config: LogConfig, name: str = "cronwrap") -> logging.Logger:
-    """Build and return a configured logger instance."""
+    """Build and return a configured logger instance.
+
+    Args:
+        config: A LogConfig instance controlling log level, destination, and format.
+        name: The logger name; defaults to 'cronwrap'.
+
+    Returns:
+        A fully configured :class:`logging.Logger`.
+    """
     logger = logging.getLogger(name)
     logger.setLevel(getattr(logging, config.log_level))
     logger.handlers.clear()
@@ -53,7 +61,13 @@ def build_logger(config: LogConfig, name: str = "cronwrap") -> logging.Logger:
 
 
 def log_result(result: RunResult, config: LogConfig, logger: logging.Logger) -> None:
-    """Log a RunResult using either structured JSON or plain text format."""
+    """Log a RunResult using either structured JSON or plain text format.
+
+    Args:
+        result: The RunResult produced by executing a cron job command.
+        config: A LogConfig instance controlling the output format.
+        logger: The logger to emit the message on.
+    """
     timestamp = datetime.now(timezone.utc).isoformat()
 
     if config.structured:
