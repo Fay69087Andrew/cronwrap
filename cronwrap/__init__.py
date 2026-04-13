@@ -1,13 +1,16 @@
-"""cronwrap — A CLI wrapper around cron jobs with logging, alerts, and retry."""
+"""cronwrap — A CLI wrapper that adds logging, failure alerts, and retry logic to cron jobs."""
 
-__version__ = "0.2.0"
-
+from cronwrap.alerts import AlertConfig, build_alert_email, send_alert
+from cronwrap.retry import RetryConfig, RetryResult, run_with_retry
 from cronwrap.runner import RunResult, run_command
-from cronwrap.alerts import AlertConfig, send_alert
 
 __all__ = [
     "RunResult",
     "run_command",
     "AlertConfig",
+    "build_alert_email",
     "send_alert",
+    "RetryConfig",
+    "RetryResult",
+    "run_with_retry",
 ]
