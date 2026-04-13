@@ -1,12 +1,13 @@
-"""cronwrap — A CLI wrapper around cron jobs.
+"""cronwrap — A CLI wrapper around cron jobs with logging, alerts, and retry."""
 
-Provides logging, failure alerts, and retry logic
-without touching crontab syntax.
-"""
+__version__ = "0.2.0"
 
-__version__ = "0.1.0"
-__author__ = "cronwrap contributors"
+from cronwrap.runner import RunResult, run_command
+from cronwrap.alerts import AlertConfig, send_alert
 
-from cronwrap.runner import run_command, RunResult
-
-__all__ = ["run_command", "RunResult"]
+__all__ = [
+    "RunResult",
+    "run_command",
+    "AlertConfig",
+    "send_alert",
+]
