@@ -78,7 +78,7 @@ def run_command(
                 started_at=started_at,
                 attempts=attempts,
             )
-        except subprocess.TimeoutExpired as exc:
+        except subprocess.TimeoutExpired:
             duration = time.time() - attempt_start
             last_result = RunResult(
                 command=command,
@@ -89,6 +89,18 @@ def run_command(
                 started_at=started_at,
                 attempts=attempts,
                 error=f"Timeout after {timeout}s",
+            )
+        except OSError as exc:
+            duration = time.time() - attempt_start
+            last_result = RunResult(
+                command=command,
+                exit_code=-1,
+                stdout="",
+                stderr="",
+                duration_seconds=duration,
+                started_at=started_at,
+                attempts=attempts,
+                error=f"OS error: {exc}",
             )
 
         if last_result.success:
