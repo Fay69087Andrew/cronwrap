@@ -56,6 +56,13 @@ def build_alert_email(result: RunResult, config: AlertConfig) -> MIMEMultipart:
     return msg
 
 
+def _connect_smtp(config: AlertConfig) -> smtplib.SMTP:
+    """Create and return an SMTP connection based on the given config."""
+    if config.use_tls:
+        return smtplib.SMTP_SSL(config.smtp_host, config.smtp_port)
+    return smtplib.SMTP(config.smtp_host, config.smtp_port)
+
+
 def send_alert(result: RunResult, config: AlertConfig) -> bool:
     """Send a failure alert email. Returns True on success, False on error."""
     if not config.to_addrs:
@@ -65,12 +72,7 @@ def send_alert(result: RunResult, config: AlertConfig) -> bool:
 
     msg = build_alert_email(result, config)
     try:
-        if config.use_tls:
-            server = smtplib.SMTP_SSL(config.smtp_host, config.smtp_port)
-        else:
-            server = smtplib.SMTP(config.smtp_host, config.smtp_port)
-
-        with server:
+        with _connect_smtp(config) as server:
             if config.smtp_user and config.smtp_password:
                 server.login(config.smtp_user, config.smtp_password)
             server.sendmail(config.from_addr, config.to_addrs, msg.as_string())
