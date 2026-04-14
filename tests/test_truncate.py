@@ -82,21 +82,22 @@ class TestTruncateText:
         text = "\n".join(str(i) for i in range(10)) + "\n"
         result = truncate_text(text, cfg)
         lines = result.split("\n")
-        # first 3 content lines + truncation notice
+        # Only the first 3 lines of content should be kept, plus the truncation notice.
         assert lines[0] == "0"
         assert lines[1] == "1"
         assert lines[2] == "2"
-        assert _TRUNCATION_NOTICE.strip() in result
+        assert _TRUNCATION_NOTICE in result
 
     def test_byte_limit_truncates(self):
         cfg = self._cfg(max_bytes=10, max_lines=10_000)
         text = "a" * 100
         result = truncate_text(text, cfg)
-        assert len(result.encode("utf-8")) > 0
-        assert _TRUNCATION_NOTICE.strip() in result
+        assert len(result.encode()) <= len(text.encode())
+        assert _TRUNCATION_NOTICE in result
 
-    def test_truncation_notice_appended_once(self):
-        cfg = self._cfg(max_bytes=10_000, max_lines=2)
-        text = "line1\nline2\nline3\n"
+    def test_truncation_notice_appears_once(self):
+        """The truncation notice should appear exactly once even when both limits are hit."""
+        cfg = self._cfg(max_bytes=10, max_lines=2)
+        text = "\n".join(["x" * 20] * 10) + "\n"
         result = truncate_text(text, cfg)
-        assert result.count(_TRUNCATION_NOTICE.strip()) == 1
+        assert result.count(_TRUNCATION_NOTICE) == 1
