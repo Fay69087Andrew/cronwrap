@@ -47,6 +47,11 @@ class TestSanitizerConfig:
         assert cfg.max_length == 200
         assert cfg.replacement == "?"
 
+    def test_from_env_invalid_max_length_raises(self):
+        """Non-integer value for CRONWRAP_SANITIZE_MAX_LENGTH should raise ValueError."""
+        with pytest.raises(ValueError):
+            SanitizerConfig.from_env({"CRONWRAP_SANITIZE_MAX_LENGTH": "notanumber"})
+
 
 class TestSanitize:
     def test_strips_ansi_color_codes(self):
@@ -76,6 +81,11 @@ class TestSanitize:
         cfg = SanitizerConfig(max_length=0)
         long_text = "a" * 10_000
         assert len(sanitize(long_text, cfg)) == 10_000
+
+    def test_max_length_exact_boundary(self):
+        """Output exactly at max_length should not be truncated."""
+        cfg = SanitizerConfig(max_length=5)
+        assert sanitize("hello", cfg) == "hello"
 
     def test_strip_ansi_false_preserves_codes(self):
         cfg = SanitizerConfig(strip_ansi=False, strip_non_printable=False)
