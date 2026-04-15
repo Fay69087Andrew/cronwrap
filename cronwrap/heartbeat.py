@@ -43,6 +43,7 @@ class HeartbeatWorker:
         self._thread: Optional[threading.Thread] = None
         self.ping_count: int = 0
         self.last_error: Optional[str] = None
+        self.error_count: int = 0
 
     def start(self) -> None:
         if not self._config.enabled or not self._config.url:
@@ -63,6 +64,7 @@ class HeartbeatWorker:
                 self.last_error = None
             except Exception as exc:  # noqa: BLE001
                 self.last_error = str(exc)
+                self.error_count += 1
 
     def summary(self) -> dict:
         return {
@@ -70,6 +72,7 @@ class HeartbeatWorker:
             "interval": self._config.interval,
             "ping_count": self.ping_count,
             "last_error": self.last_error,
+            "error_count": self.error_count,
         }
 
 
