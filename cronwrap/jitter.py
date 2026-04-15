@@ -47,6 +47,11 @@ def apply_jitter(base_delay: float, cfg: JitterConfig, _rng: random.Random | Non
         Optional :class:`random.Random` instance (used in tests for
         determinism).  When *None* a fresh instance is created, optionally
         seeded by ``cfg.seed``.
+
+    Returns
+    -------
+    float
+        The jittered delay in seconds, always >= 0.
     """
     if base_delay < 0:
         raise ValueError(f"base_delay must be >= 0, got {base_delay}")
@@ -73,3 +78,30 @@ def apply_jitter(base_delay: float, cfg: JitterConfig, _rng: random.Random | Non
         return rng.uniform(base_delay, upper) if upper > base_delay else base_delay
 
     return base_delay  # fallback (should not reach)
+
+
+def clamp_delay(delay: float, min_delay: float = 0.0, max_delay: float | None = None) -> float:
+    """Clamp *delay* to the range [*min_delay*, *max_delay*].
+
+    Useful for ensuring that a jittered delay does not fall below zero or
+    exceed a hard upper bound before passing it to a sleep call.
+
+    Parameters
+    ----------
+    delay:
+        The delay value to clamp (seconds).
+    min_delay:
+        Lower bound (default ``0.0``).
+    max_delay:
+        Upper bound, or ``None`` for no upper bound.
+    """
+    if min_delay < 0:
+        raise ValueError(f"min_delay must be >= 0, got {min_delay}")
+    if max_delay is not None and max_delay < min_delay:
+        raise ValueError(
+            f"max_delay ({max_delay}) must be >= min_delay ({min_delay})"
+        )
+    result = max(min_delay, delay)
+    if max_delay is not None:
+        result = min(max_delay, result)
+    return result
