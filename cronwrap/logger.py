@@ -60,6 +60,48 @@ def build_logger(config: LogConfig, name: str = "cronwrap") -> logging.Logger:
     return logger
 
 
+def _build_structured_message(result: RunResult, timestamp: str) -> str:
+    """Serialize a RunResult to a JSON string for structured logging.
+
+    Args:
+        result: The RunResult to serialize.
+        timestamp: An ISO-8601 timestamp string to include in the payload.
+
+    Returns:
+        A JSON-encoded string representing the run result.
+    """
+    payload = {
+        "timestamp": timestamp,
+        "command": result.command,
+        "exit_code": result.exit_code,
+        "success": result.success,
+        "duration_seconds": result.duration_seconds,
+        "stdout": result.stdout,
+        "stderr": result.stderr,
+    }
+    return json.dumps(payload)
+
+
+def _build_plain_message(result: RunResult) -> str:
+    """Format a RunResult as a human-readable log string.
+
+    Args:
+        result: The RunResult to format.
+
+    Returns:
+        A plain-text string summarising the run result.
+    """
+    status = "SUCCESS" if result.success else "FAILURE"
+    message = (
+        f"[{status}] command={result.command!r} "
+        f"exit_code={result.exit_code} "
+        f"duration={result.duration_seconds:.3f}s"
+    )
+    if result.stderr:
+        message += f" stderr={result.stderr.strip()!r}"
+    return message
+
+
 def log_result(result: RunResult, config: LogConfig, logger: logging.Logger) -> None:
     """Log a RunResult using either structured JSON or plain text format.
 
@@ -71,25 +113,9 @@ def log_result(result: RunResult, config: LogConfig, logger: logging.Logger) -> 
     timestamp = datetime.now(timezone.utc).isoformat()
 
     if config.structured:
-        payload = {
-            "timestamp": timestamp,
-            "command": result.command,
-            "exit_code": result.exit_code,
-            "success": result.success,
-            "duration_seconds": result.duration_seconds,
-            "stdout": result.stdout,
-            "stderr": result.stderr,
-        }
-        message = json.dumps(payload)
+        message = _build_structured_message(result, timestamp)
     else:
-        status = "SUCCESS" if result.success else "FAILURE"
-        message = (
-            f"[{status}] command={result.command!r} "
-            f"exit_code={result.exit_code} "
-            f"duration={result.duration_seconds:.3f}s"
-        )
-        if result.stderr:
-            message += f" stderr={result.stderr.strip()!r}"
+        message = _build_plain_message(result)
 
     level = logging.INFO if result.success else logging.ERROR
     logger.log(level, message)
