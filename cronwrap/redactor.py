@@ -41,6 +41,11 @@ class RedactorConfig:
         return cls(enabled=enabled, extra_patterns=extra, placeholder=placeholder)
 
 
+def _compiled_patterns(config: RedactorConfig) -> List[re.Pattern]:
+    """Return compiled regex patterns for the given config."""
+    return [re.compile(p) for p in _DEFAULT_PATTERNS + config.extra_patterns]
+
+
 def redact(text: str, config: RedactorConfig | None = None) -> str:
     """Return *text* with sensitive values replaced by the placeholder.
 
@@ -52,6 +57,16 @@ def redact(text: str, config: RedactorConfig | None = None) -> str:
         return text
 
     result = text
-    for pattern in _DEFAULT_PATTERNS + config.extra_patterns:
-        result = re.sub(pattern, config.placeholder, result)
+    for pattern in _compiled_patterns(config):
+        result = pattern.sub(config.placeholder, result)
     return result
+
+
+def redact_args(args: List[str], config: RedactorConfig | None = None) -> List[str]:
+    """Return a copy of *args* with each element passed through :func:`redact`.
+
+    Useful for sanitising command-line argument lists before logging.
+    """
+    if config is None:
+        config = RedactorConfig()
+    return [redact(arg, config) for arg in args]
