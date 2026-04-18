@@ -16,14 +16,14 @@ restarting from scratch.
 | Environment variable | Default | Description |
 |---|---|---|
 | `CRONWRAP_CHECKPOINT_ENABLED` | `false` | Enable checkpoint persistence |
-| `CRONWRAP_CHECKPOINT_DIR` | `/tmp/cronwrap/checkpoints checkpoint files |
+| `CRONWRAP_CHECKPOINT_DIR` | `/tmp/cronwrap/checkpoints` | Directory for checkpoint files |
 | `CRONWRAP_CHECKPOINT_TTL` | `86400` | Seconds before a checkpoint is considered stale |
 
 ## Quick start
 
 ```python
 from cronwrap.checkpoint import CheckpointConfig, CheckpointStore
-integration import (
+from cronwrap.checkpoint.integration import (
     resume_or_start, commit_checkpoint, finalize_checkpoint
 )
 
