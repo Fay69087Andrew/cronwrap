@@ -46,6 +46,19 @@ Checkpoints older than `ttl_seconds` are silently discarded on the next load.
 This prevents a stale marker from causing an infinite resume loop when the
 underlying data has changed.
 
+## Manually clearing a checkpoint
+
+If a job is stuck in a bad resume state you can delete its checkpoint file
+directly, or use `CheckpointStore.clear` from a Python shell:
+
+```python
+from cronwrap.checkpoint import CheckpointConfig, CheckpointStore
+
+store = CheckpointStore(CheckpointConfig(enabled=True))
+store.clear("my-etl-job")
+print("Checkpoint cleared – next run will start from scratch.")
+```
+
 ## File format
 
 Each checkpoint is stored as a single JSON file named after the job ID
