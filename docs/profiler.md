@@ -12,6 +12,10 @@ thresholds.
 | `CRONWRAP_PROFILER_WARN_SECONDS` | `60` | Elapsed seconds before a `warn` level is emitted |
 | `CRONWRAP_PROFILER_CRITICAL_SECONDS` | `300` | Elapsed seconds before a `critical` level is emitted |
 
+> **Note:** `CRONWRAP_PROFILER_WARN_SECONDS` must be strictly less than
+> `CRONWRAP_PROFILER_CRITICAL_SECONDS`. A `ValueError` is raised at
+> configuration time if this constraint is violated.
+
 ## Programmatic usage
 
 ```python
@@ -45,3 +49,10 @@ if profile.level != "ok":
 | `ok` | `elapsed < warn_threshold_seconds` |
 | `warn` | `warn_threshold_seconds <= elapsed < critical_threshold_seconds` |
 | `critical` | `elapsed >= critical_threshold_seconds` |
+
+## Disabling profiling
+
+When `CRONWRAP_PROFILER_ENABLED=false`, the `Profiler` context manager still
+returns a result object, but `elapsed` will be `0.0` and `level` will always
+be `ok`. This allows call sites to handle the result uniformly regardless of
+whether profiling is active.
